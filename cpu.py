@@ -1,5 +1,5 @@
 import copy
-from gui_basic import win
+from main import win
 
 opp = [1,0]
 
