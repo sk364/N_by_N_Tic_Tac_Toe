@@ -141,6 +141,16 @@ def gen_board(board,player, m):
 	new_board[m[0]][m[1]] = player
 	return new_board
 
+def if_second_move(board,n):
+	c = 0
+	for i in xrange(n):
+		for j in xrange(n):
+			if board[i][j]==0 or board[i][j]==1:
+				c += 1
+			if c>1:
+				return 0
+
+	return 1
 
 def minimax(board, player, depth, n):
 	moves = get_moves(board, n)
@@ -148,18 +158,22 @@ def minimax(board, player, depth, n):
 	if not moves:
 		return None
 
+	if len(moves) == 1 or if_second_move(board,n):
+		return moves[0]
+
 	best_move = moves[0]
 	best_score = 0
 
 	for move in moves:
 		clone_board=gen_board(board,opp[player],move)
-		#print clone_board
+		
 		if win(clone_board,opp[player],n):
 			return move
 
 	for move in moves:
 		clone_board=gen_board(board,player,move)
-                if win(clone_board,player,n):
+                
+		if win(clone_board,player,n):
                         return move
 
 		score = min_play(clone_board,opp[player],depth,n)
@@ -168,13 +182,15 @@ def minimax(board, player, depth, n):
 			best_score = score
 			best_move = move
 
+
 	return best_move
 
 
 def min_play(board, player, depth, n):
 	moves = get_moves(board,n)
 
-	if not moves or depth==0:	evaluate(board,player,n)
+	if not moves or depth==0:	
+		return evaluate(board,player,n)
 	
 	best_score = float('inf')
 
@@ -194,7 +210,8 @@ def min_play(board, player, depth, n):
 def max_play(board, player, depth, n):
         moves = get_moves(board,n)
 
-        if not moves or depth==0:       evaluate(board,player,n)
+        if not moves or depth==0:       
+		return evaluate(board,player,n)
 
         best_score = float('-inf')
 

@@ -118,7 +118,7 @@ def init_board(n):
 def run_human_vs_cpu():
 	SIZE = 400
 
-	depth = 1
+	depth = 2
 
 	player = int (inputbox.ask(screen, "0 for cross, 1 for circle"))
 	n = int (inputbox.ask(screen, "Enter N"))
