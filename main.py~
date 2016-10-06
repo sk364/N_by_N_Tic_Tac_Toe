@@ -16,6 +16,7 @@ n = 1
 GAME_EXIT_MSGS = ["You Lose!", "You Win!", "DRAW!"]
 
 def get_square(x,y):
+#	print [y/SIZE, x/SIZE]
 	return [(y*n)/SIZE, (x*n)/SIZE]
 
 def init_board():
