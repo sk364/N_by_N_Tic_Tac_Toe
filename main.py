@@ -9,9 +9,9 @@ pygame.init()
 
 opp = [1,0]
 depth = 5
-player = 1
-first_play = 1
-n = 1
+player = -1
+first_play = -1
+n = 0
 
 GAME_EXIT_MSGS = ["You Lose!", "You Win!", "DRAW!"]
 
@@ -54,11 +54,21 @@ def run_game(mode):
 	global player, first_play, n
 
 	if mode==1:
-		player = int (inputbox.ask(screen, "0 for cross, 1 for circle"))
-		first_play = int (inputbox.ask(screen, "play 0 or 1 first ?"))
+		while player not in [0,1]:
+			x = inputbox.ask(screen,"Press 1 for circle, 0 for cross")
+                	if len(x) == 1 and x in ['1','0']:
+                        	player = int (x)
 
+		while first_play not in [0,1]:
+			x = inputbox.ask(screen,"Press 0 for cross to play first, 1 for circle")
+	                if len(x) == 1 and x in ['1','0']:
+        	                first_play = int (x)
+	
 	if mode!=3:
-		n = int (inputbox.ask(screen, "Enter N"))
+		while n<=0 or n>8:
+			x = inputbox.ask(screen, "Enter N")
+			if len(x)==1 and x in [str(i) for i in xrange(1,8)]:
+				n = int (x)
 
 	board = init_board()
 	draw_board(board,SIZE,n)
@@ -75,7 +85,6 @@ def run_game(mode):
 
 			if event.type == pygame.MOUSEBUTTONDOWN and mode!=2:
 				x,y = pygame.mouse.get_pos()
-				print [x,y]
 				p = get_square(x,y)
 				if board[p[0]][p[1]] == -1:
 					board[p[0]][p[1]] = player
@@ -102,7 +111,12 @@ def run_game(mode):
 
 def main():
 	screen.fill((0,0,0))
-	ch = int (inputbox.ask(screen,"Press 1 for CPU v/s You and 2 for CPU v/s CPU"))
+	ch = -1
+	while ch not in [1,2]:
+		x = inputbox.ask(screen,"Press 1 for CPU v/s You and 2 for CPU v/s CPU")
+		if len(x) == 1 and x[0] in ['1','2']:
+			ch = int (x[0])
+
 	run_game(ch)
 
 if __name__=="__main__":
