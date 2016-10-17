@@ -28,7 +28,7 @@ def draw_board(board, size, n):
 def display_message(msg):
 	BLUE = (0,0,200)
 	
-	font = pygame.font.SysFont(None, 100)
+	font = pygame.font.SysFont(None, 50)
 
 	label = font.render(msg,True,BLUE)
 

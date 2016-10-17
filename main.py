@@ -2,18 +2,170 @@ import sys
 import inputbox
 import cpu
 import gui
+import copy
 from gui import *
 from common import *
 
 pygame.init()
 
 opp = [1,0]
-depth = 5
+depth = 3
 player = -1
 first_play = -1
 n = 0
 
 GAME_EXIT_MSGS = ["You Lose!", "You Win!", "DRAW!"]
+
+def get_rcscore(board, p, n, fl, c=0):
+    scr = 0
+
+    if c==0:
+	for i in xrange(n):
+	    prev = 0
+	    end = False
+	    for j in xrange(n):
+	        if board[i][j] == p:
+		    end = True
+		    if prev:
+		        fl[i][j] = 1
+		        fl[i][j-1] = 1
+		    elif fl[i][j]==0:
+		        fl[i][j] = -1
+		    prev += 1
+	        else:
+		    if prev!=1:
+		        scr += prev
+		    prev = 0
+		    end = False
+	    if end and prev!=1:
+	        scr += prev
+
+    if c==1:
+        for i in xrange(n):
+            prev = 0
+            end = False
+            for j in xrange(n):
+                if board[j][i] == p:
+                    end = True
+                    if prev:
+                        fl[j][i] = 1
+                        fl[j-1][i] = 1
+                    elif fl[j][i]==0:
+                        fl[j][i] = -1
+                    prev += 1
+                else:
+                    if prev!=1:
+                        scr += prev
+                    prev = 0
+                    end = False
+            if end and prev!=1:
+                scr += prev
+        
+    return scr
+
+def get_diagscore(board, p, n, fl, c=0):
+    scr = 0
+    scr1 = 0
+    if c==0:
+        for k in xrange(n):
+            j = k
+            prev = 0
+            prev1 = 0
+            for i in xrange(n+1):
+                if j==n or i==n:
+                    if prev!=1:
+                        scr += prev
+                    if prev1!=1:
+                        scr1 += prev1
+                    break
+
+                if board[i][j] == p:
+                    if prev:
+                        fl[i][j] = 1
+                        fl[i-1][j-1] = 1
+                    elif fl[i][j]==0:
+                        fl[i][j] = -1
+                    prev += 1
+                else:
+                    if prev!=1:
+                        scr += prev
+                    prev = 0
+                    
+                if board[j][i] == p and i!=j:
+                    if prev1:
+                        fl[j][i] = 1
+                        fl[j-1][i-1] = 1
+                    elif fl[j][i]==0:
+                        fl[j][i] = -1
+                    prev1 += 1
+                else:
+                    if prev1!=1:
+                        scr1 += prev1
+                    prev1 = 0
+                j += 1
+
+    elif c==1:
+        for k in xrange(n):
+            j=k
+            prev = 0
+            prev1 = 0
+            for i in xrange(n+1):
+                if j<0:
+                    if prev!=1:
+                        scr += prev
+                    if prev1!=1:
+                        scr1 += prev1
+			print k
+                    break
+                
+
+                if board[i][j] == p:
+                    if prev:
+                        fl[i][j] = 1
+                        fl[i-1][j+1] = 1
+                    elif fl[i][j]==0:
+                        fl[i][j] = -1
+                    prev += 1
+                else:
+                    if prev!=1:
+                        scr += prev
+                    prev = 0
+
+                if board[n-i-1][n-j-1] == p and k!=n-1:
+                    if prev1:
+                        fl[n-i-1][n-j-1] = 1
+                        fl[n-i][n-j-2] = 1
+                    elif fl[n-i-1][n-j-1]==0:
+                        fl[n-i-1][n-j-1] = -1
+                    prev1 += 1
+                else:
+                    if prev1!=1:
+                        scr1 += prev1
+                    prev1 = 0
+
+                j -= 1
+        
+    return scr + scr1
+
+def leftovers(fl, n):
+    scr = 0
+    for i in xrange(n):
+        for j in xrange(n):
+            if fl[i][j] == -1:
+                scr += 1
+                fl[i][j] = 1
+    return scr
+
+def get_score(board, p, n):
+	fl = [[0 for i in xrange(n)] for i in xrange(n)]
+
+	score = get_rcscore(board, p, n, fl)
+	score += get_rcscore(board, p, n, fl, c=1)
+	score += get_diagscore(board, p, n, fl)
+	score += get_diagscore(board, p, n, fl, c=1)
+	score += leftovers(fl, n)
+
+	return score
 
 def get_square(x,y):
 	return [(y*n)/SIZE, (x*n)/SIZE]
@@ -23,7 +175,7 @@ def init_board():
 	return board
 
 def check_game_end(board, player, mode):
-	msg = GAME_EXIT_MSGS
+	'''msg = GAME_EXIT_MSGS
 	if mode==2:
 		msg[0] = "O wins"
 		msg[1] = "X wins"
@@ -37,6 +189,18 @@ def check_game_end(board, player, mode):
 	if board_full(board, n):
 		display_message(msg[2])
 	        return 0
+
+	return 2'''
+
+	if board_full(board, n):
+		if player==0:
+			x_scr = get_score(board, player, n)
+			o_scr = get_score(board, opp[player], n)
+		else:
+			o_scr = get_score(board, player, n)
+			x_scr = get_score(board, opp[player], n)
+		display_message("Score - O = "+str(o_scr) + " X = " + str(x_scr))
+		return 1
 
 	return 2
 
@@ -95,12 +259,12 @@ def run_game(mode):
 
 					if end==2:
 						end = cpu_turn(board,opp[player], mode)
-						if end != 2:
+						'''if end != 2:
 							first_play = not first_play
-							run_game(3)
-					else:
+							run_game(3)'''
+					'''else:
 						first_play = not first_play
-						run_game(3)			
+						run_game(3)'''
 
 		if mode==2:
 			end = cpu_turn(board,player, mode)
