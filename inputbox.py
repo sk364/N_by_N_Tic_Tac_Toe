@@ -1,4 +1,4 @@
-# by Timothy Downs, inputbox written for my map editor
+""" by Timothy Downs, inputbox written for my map editor
 
 # This program needs a little cleaning up
 # It ignores the shift key
@@ -11,55 +11,71 @@
 # answer = inputbox.ask(screen, "Your name")
 #
 # Only near the center of the screen is blitted to
+"""
 
-import pygame, pygame.font, pygame.event, pygame.draw, string
-from pygame.locals import *
+import string
+import pygame
+import pygame.font
+import pygame.event
+import pygame.draw
+
 
 def get_key():
-  while 1:
-    event = pygame.event.poll()
-    if event.type == KEYDOWN:
-      return event.key
-    else:
-      pass
+    """
+    Returns which key got pressed
+    """
+    while 1:
+        event = pygame.event.poll()
+        if event.type == KEYDOWN:
+            return event.key
+        else:
+            pass
+
 
 def display_box(screen, message):
-  "Print a message in a box in the middle of the screen"
-  fontobject = pygame.font.Font(None,25)
-  pygame.draw.rect(screen, (0,0,0),
-                   ((screen.get_width() / 2) - 100,
-                    (screen.get_height() / 2) - 10,
-                    200,20), 0)
-  #pygame.draw.rect(screen, (255,255,255),
-   #                ((screen.get_width() / 2) - 102,
-    #                (screen.get_height() / 2) - 12,
-     #               204,24), 1)
-  if len(message) != 0:
-    screen.fill((0,0,0))
-    label = fontobject.render(message, 1, (255,255,255))
-    screen.blit(label,(((screen.get_width() - label.get_rect().width)/ 2) , ((screen.get_height() - label.get_rect().height) / 2)))
-  pygame.display.flip()
+    """
+    Print a message in a box in the middle of the screen
+    """
+    fontobject = pygame.font.Font(None, 25)
+    pygame.draw.rect(screen, (0, 0, 0),
+                     ((screen.get_width() / 2) - 100,
+                      (screen.get_height() / 2) - 10,
+                      200, 20), 0)
+
+    if len(message) != 0:
+        screen.fill((0, 0, 0))
+        label = fontobject.render(message, 1, (255, 255, 255))
+        screen.blit(label, (((screen.get_width() - label.get_rect().width) / 2),
+                            ((screen.get_height() - label.get_rect().height) / 2)))
+    pygame.display.flip()
+
 
 def ask(screen, question):
-  "ask(screen, question) -> answer"
-  pygame.font.init()
-  current_string = []
-  display_box(screen, question + ": " + string.join(current_string,""))
-  while 1:
-    inkey = get_key()
-    if inkey == K_BACKSPACE:
-      current_string = current_string[0:-1]
-    elif inkey == K_RETURN:
-      break
-    elif inkey == K_MINUS:
-      current_string.append("_")
-    elif inkey <= 127:
-      current_string.append(chr(inkey))
-    display_box(screen, question + ": " + string.join(current_string,""))
-  return string.join(current_string,"")
+    """
+    Asks a questions and captures the answer
+    """
+    pygame.font.init()
+    current_string = []
+    display_box(screen, question + ": " + string.join(current_string, ""))
+    while 1:
+        inkey = get_key()
+        if inkey == K_BACKSPACE:
+            current_string = current_string[0:-1]
+        elif inkey == K_RETURN:
+            break
+        elif inkey == K_MINUS:
+            current_string.append("_")
+        elif inkey <= 127:
+            current_string.append(chr(inkey))
+        display_box(screen, question + ": " + string.join(current_string, ""))
+    return string.join(current_string, "")
+
 
 def main():
-  screen = pygame.display.set_mode((320,240))
-  #print ask(screen, "Name") + " was entered"
+    """
+    Main program to call appropriate methods
+    """
+    screen = pygame.display.set_mode((320, 240))
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    main()

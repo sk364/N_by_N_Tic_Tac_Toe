@@ -1,287 +1,314 @@
-import sys 
+"""
+The main program to run the game
+"""
+
+import sys
+import copy
 import inputbox
 import cpu
 import gui
-import copy
-from gui import *
-from common import *
+from gui import draw_board, display_message
+from common import board_full, win
 
 pygame.init()
 
-opp = [1,0]
-depth = 3
-player = -1
-first_play = -1
-n = 0
+OPP = [1, 0]
+DEPTH = 3
+PLAYER = -1
+FIRST_PLAY = -1
+GLENGTH = 0
 
 GAME_EXIT_MSGS = ["You Lose!", "You Win!", "DRAW!"]
 
-def get_rcscore(board, p, n, fl, c=0):
+
+def get_rcscore(board, player, glength, flag, check=0):
+    """
+    Returns the row/column score of a player after the game is over
+    """
     scr = 0
 
-    if c==0:
-	for i in xrange(n):
-	    prev = 0
-	    end = False
-	    for j in xrange(n):
-	        if board[i][j] == p:
-		    end = True
-		    if prev:
-		        fl[i][j] = 1
-		        fl[i][j-1] = 1
-		    elif fl[i][j]==0:
-		        fl[i][j] = -1
-		    prev += 1
-	        else:
-		    if prev!=1:
-		        scr += prev
-		    prev = 0
-		    end = False
-	    if end and prev!=1:
-	        scr += prev
-
-    if c==1:
-        for i in xrange(n):
+    if check == 0:
+        for i in xrange(glength):
             prev = 0
             end = False
-            for j in xrange(n):
-                if board[j][i] == p:
+            for j in xrange(glength):
+                if board[i][j] == player:
                     end = True
                     if prev:
-                        fl[j][i] = 1
-                        fl[j-1][i] = 1
-                    elif fl[j][i]==0:
-                        fl[j][i] = -1
+                        flag[i][j] = 1
+                        flag[i][j - 1] = 1
+                    elif flag[i][j] == 0:
+                        flag[i][j] = -1
                     prev += 1
                 else:
-                    if prev!=1:
+                    if prev != 1:
                         scr += prev
                     prev = 0
                     end = False
-            if end and prev!=1:
+            if end and prev != 1:
                 scr += prev
-        
+
+    if check == 1:
+        for i in xrange(glength):
+            prev = 0
+            end = False
+            for j in xrange(glength):
+                if board[j][i] == player:
+                    end = True
+                    if prev:
+                        flag[j][i] = 1
+                        flag[j - 1][i] = 1
+                    elif flag[j][i] == 0:
+                        flag[j][i] = -1
+                    prev += 1
+                else:
+                    if prev != 1:
+                        scr += prev
+                    prev = 0
+                    end = False
+            if end and prev != 1:
+                scr += prev
+
     return scr
 
-def get_diagscore(board, p, n, fl, c=0):
+
+def get_main_diagscore(board, player, glength, flag):
+    """
+    Returns the main diagonal score of a player after the game is over
+    """
     scr = 0
     scr1 = 0
-    if c==0:
-        for k in xrange(n):
-            j = k
-            prev = 0
-            prev1 = 0
-            for i in xrange(n+1):
-                if j==n or i==n:
-                    if prev!=1:
-                        scr += prev
-                    if prev1!=1:
-                        scr1 += prev1
-                    break
+    for k in xrange(glength):
+        j = k
+        prev = 0
+        prev1 = 0
+        for i in xrange(glength + 1):
+            if j == glength or i == glength:
+                if prev != 1:
+                    scr += prev
+                if prev1 != 1:
+                    scr1 += prev1
+                break
 
-                if board[i][j] == p:
-                    if prev:
-                        fl[i][j] = 1
-                        fl[i-1][j-1] = 1
-                    elif fl[i][j]==0:
-                        fl[i][j] = -1
-                    prev += 1
-                else:
-                    if prev!=1:
-                        scr += prev
-                    prev = 0
-                    
-                if board[j][i] == p and i!=j:
-                    if prev1:
-                        fl[j][i] = 1
-                        fl[j-1][i-1] = 1
-                    elif fl[j][i]==0:
-                        fl[j][i] = -1
-                    prev1 += 1
-                else:
-                    if prev1!=1:
-                        scr1 += prev1
-                    prev1 = 0
-                j += 1
+            if board[i][j] == player:
+                if prev:
+                    flag[i][j] = 1
+                    flag[i - 1][j - 1] = 1
+                elif flag[i][j] == 0:
+                    flag[i][j] = -1
+                prev += 1
+            else:
+                if prev != 1:
+                    scr += prev
+                prev = 0
 
-    elif c==1:
-        for k in xrange(n):
-            j=k
-            prev = 0
-            prev1 = 0
-            for i in xrange(n+1):
-                if j<0:
-                    if prev!=1:
-                        scr += prev
-                    if prev1!=1:
-                        scr1 += prev1
-			print k
-                    break
-                
-
-                if board[i][j] == p:
-                    if prev:
-                        fl[i][j] = 1
-                        fl[i-1][j+1] = 1
-                    elif fl[i][j]==0:
-                        fl[i][j] = -1
-                    prev += 1
-                else:
-                    if prev!=1:
-                        scr += prev
-                    prev = 0
-
-                if board[n-i-1][n-j-1] == p and k!=n-1:
-                    if prev1:
-                        fl[n-i-1][n-j-1] = 1
-                        fl[n-i][n-j-2] = 1
-                    elif fl[n-i-1][n-j-1]==0:
-                        fl[n-i-1][n-j-1] = -1
-                    prev1 += 1
-                else:
-                    if prev1!=1:
-                        scr1 += prev1
-                    prev1 = 0
-
-                j -= 1
-        
+            if board[j][i] == player and i != j:
+                if prev1:
+                    flag[j][i] = 1
+                    flag[j - 1][i - 1] = 1
+                elif flag[j][i] == 0:
+                    flag[j][i] = -1
+                prev1 += 1
+            else:
+                if prev1 != 1:
+                    scr1 += prev1
+                prev1 = 0
+            j += 1
     return scr + scr1
 
-def leftovers(fl, n):
+def get_other_diagscore(board, player, glength, flag):
+    """
+    Returns the other diagonal score of a player after the game is over
+    """
+
+    for k in xrange(glength):
+        j = k
+        prev = 0
+        prev1 = 0
+        for i in xrange(glength + 1):
+            if j < 0:
+                if prev != 1:
+                    scr += prev
+                if prev1 != 1:
+                    scr1 += prev1
+                break
+
+            if board[i][j] == player:
+                if prev:
+                    flag[i][j] = 1
+                    flag[i - 1][j + 1] = 1
+                elif flag[i][j] == 0:
+                    flag[i][j] = -1
+                prev += 1
+            else:
+                if prev != 1:
+                    scr += prev
+                prev = 0
+
+            if board[glength - i - 1][glength - j - 1] == player and k != glength - 1:
+                if prev1:
+                    flag[glength - i - 1][glength - j - 1] = 1
+                    flag[glength - i][glength - j - 2] = 1
+                elif flag[glength - i - 1][glength - j - 1] == 0:
+                    flag[glength - i - 1][glength - j - 1] = -1
+                prev1 += 1
+            else:
+                if prev1 != 1:
+                    scr1 += prev1
+                prev1 = 0
+
+            j -= 1
+
+    return scr + scr1
+
+
+def leftovers(flag, glength):
+    """
+    Returns the score of the singular (unmatched) move
+    """
     scr = 0
-    for i in xrange(n):
-        for j in xrange(n):
-            if fl[i][j] == -1:
+    for i in xrange(glength):
+        for j in xrange(glength):
+            if flag[i][j] == -1:
                 scr += 1
-                fl[i][j] = 1
+                flag[i][j] = 1
     return scr
 
-def get_score(board, p, n):
-	fl = [[0 for i in xrange(n)] for i in xrange(n)]
 
-	score = get_rcscore(board, p, n, fl)
-	score += get_rcscore(board, p, n, fl, c=1)
-	score += get_diagscore(board, p, n, fl)
-	score += get_diagscore(board, p, n, fl, c=1)
-	score += leftovers(fl, n)
+def get_score(board, player, glength):
+    """
+    Returns the total score of a player
+    """
+    flag = [[0 for i in xrange(glength)] for i in xrange(glength)]
 
-	return score
+    score = get_rcscore(board, player, glength, flag)
+    score += get_rcscore(board, player, glength, flag, check=1)
+    score += get_diagscore(board, player, glength, flag)
+    score += get_diagscore(board, player, glength, flag, check=1)
+    score += leftovers(flag, glength)
 
-def get_square(x,y):
-	return [(y*n)/SIZE, (x*n)/SIZE]
+    return score
+
+
+def get_square(x_coord, y_coord):
+    """
+    Returns the [row_number, column_number]
+    """
+    return [(y_coord * GLENGTH) / SIZE, (x_coord * GLENGTH) / SIZE]
+
 
 def init_board():
-	board = [[-1 for x in range(n)] for x in range(n)]
-	return board
+    """
+    Initializes the board, sets -1 for empty blocks
+    """
+    board = [[-1 for x in range(GLENGTH)] for x in range(GLENGTH)]
+    return board
+
 
 def check_game_end(board, player, mode):
-	'''msg = GAME_EXIT_MSGS
-	if mode==2:
-		msg[0] = "O wins"
-		msg[1] = "X wins"
+    """
+    Returns 1 if the game ended or 2 if not
+    """
+    if board_full(board, GLENGTH):
+        if player == 0:
+            x_scr = get_score(board, player, GLENGTH)
+            o_scr = get_score(board, OPP[player], GLENGTH)
+        else:
+            o_scr = get_score(board, player, GLENGTH)
+            x_scr = get_score(board, OPP[player], GLENGTH)
+        display_message("Score - O = " + str(o_scr) + " X = " + str(x_scr))
+        return 1
 
-	if win(board,opp[player],n):
-		display_message(msg[0])
-		return 1
-	if win(board,player,n):
-		display_message(msg[1])
-		return -1
-	if board_full(board, n):
-		display_message(msg[2])
-	        return 0
+    return 2
 
-	return 2'''
-
-	if board_full(board, n):
-		if player==0:
-			x_scr = get_score(board, player, n)
-			o_scr = get_score(board, opp[player], n)
-		else:
-			o_scr = get_score(board, player, n)
-			x_scr = get_score(board, opp[player], n)
-		display_message("Score - O = "+str(o_scr) + " X = " + str(x_scr))
-		return 1
-
-	return 2
 
 def cpu_turn(board, player, mode):
-	cpu_move = cpu.minimax(board, player, depth, n)
-	if cpu_move:
-		board[cpu_move[0]][cpu_move[1]] = player
-		draw_board(board,SIZE,n)
+    """
+    Returns the move by the cpu
+    """
+    cpu_move = cpu.minimax(board, player, DEPTH, GLENGTH)
+    if cpu_move:
+        board[cpu_move[0]][cpu_move[1]] = player
+        draw_board(board, SIZE, GLENGTH)
 
-	end = check_game_end(board,opp[player], mode)
+    end = check_game_end(board, OPP[player], mode)
 
-	return end
+    return end
+
 
 def run_game(mode):
-	global player, first_play, n
+    """
+    Runs the game and quits on user call
+    """
+    global PLAYER, FIRST_PLAY, GLENGTH
 
-	if mode==1:
-		while player not in [0,1]:
-			x = inputbox.ask(screen,"Press 1 for circle, 0 for cross")
-                	if len(x) == 1 and x in ['1','0']:
-                        	player = int (x)
+    if mode == 1:
+        while PLAYER not in [0, 1]:
+            ans = inputbox.ask(screen, "Press 1 for circle, 0 for cross")
+            if len(ans) == 1 and ans in ['1', '0']:
+                PLAYER = int(ans)
 
-		while first_play not in [0,1]:
-			x = inputbox.ask(screen,"Press 0 for cross to play first, 1 for circle")
-	                if len(x) == 1 and x in ['1','0']:
-        	                first_play = int (x)
-	
-	if mode!=3:
-		while n<=0 or n>8:
-			x = inputbox.ask(screen, "Enter N")
-			if len(x)==1 and x in [str(i) for i in xrange(1,8)]:
-				n = int (x)
+        while FIRST_PLAY not in [0, 1]:
+            ans = inputbox.ask(
+                screen, "Press 0 for cross to play first, 1 for circle")
+            if len(ans) == 1 and ans in ['1', '0']:
+                FIRST_PLAY = int(ans)
 
-	board = init_board()
-	draw_board(board,SIZE,n)
+    if mode != 3:
+        while GLENGTH <= 0 or GLENGTH > 8:
+            ans = inputbox.ask(screen, "Enter N")
+            if len(ans) == 1 and ans in [str(i) for i in xrange(1, 8)]:
+                GLENGTH = int(ans)
 
-	if first_play == opp[player] and mode!=2:
-		cpu_turn(board,opp[player], mode)
+    board = init_board()
+    draw_board(board, SIZE, GLENGTH)
 
-	game_loop = True
-	while game_loop:
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.quit()
-				sys.exit()
+    if FIRST_PLAY == OPP[PLAYER] and mode != 2:
+        cpu_turn(board, OPP[PLAYER], mode)
 
-			if event.type == pygame.MOUSEBUTTONDOWN and mode!=2:
-				x,y = pygame.mouse.get_pos()
-				p = get_square(x,y)
-				if board[p[0]][p[1]] == -1:
-					board[p[0]][p[1]] = player
-			
-					draw_board(board,SIZE,n)
+    game_loop = True
+    while game_loop:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-					end = check_game_end(board, player, mode)
+            if event.type == pygame.MOUSEBUTTONDOWN and mode != 2:
+                x_coord, y_coord = pygame.mouse.get_pos()
+                sqr = get_square(x_coord, y_coord)
+                if board[sqr[0]][sqr[1]] == -1:
+                    board[sqr[0]][sqr[1]] = PLAYER
 
-					if end==2:
-						end = cpu_turn(board,opp[player], mode)
-						'''if end != 2:
-							first_play = not first_play
-							run_game(3)'''
-					'''else:
-						first_play = not first_play
-						run_game(3)'''
+                    draw_board(board, SIZE, GLENGTH)
 
-		if mode==2:
-			end = cpu_turn(board,player, mode)
-			if end==2:
-				pass
-			pygame.time.wait(100)
-			player = opp[player]
+                    end = check_game_end(board, PLAYER, mode)
+
+                    if end == 2:
+                        end = cpu_turn(board, OPP[PLAYER], mode)
+
+        if mode == 2:
+            end = cpu_turn(board, PLAYER, mode)
+            if end == 2:
+                pass
+            pygame.time.wait(100)
+            PLAYER = OPP[PLAYER]
+
 
 def main():
-	screen.fill((0,0,0))
-	ch = -1
-	while ch not in [1,2]:
-		x = inputbox.ask(screen,"Press 1 for CPU v/s You and 2 for CPU v/s CPU")
-		if len(x) == 1 and x[0] in ['1','2']:
-			ch = int (x[0])
+    """
+    Main program to call appropriate methods to initialize and run the game
+    """
 
-	run_game(ch)
+    black = (0, 0, 0)
+    screen.fill(black)
+    choice = -1
+    while choice not in [1, 2]:
+        ans = inputbox.ask(
+            screen, "Press 1 for CPU v/s You and 2 for CPU v/s CPU")
+        if len(ans) == 1 and ans[0] in ['1', '2']:
+            choice = int(ans[0])
 
-if __name__=="__main__":
-	main()
+    run_game(choice)
+
+if __name__ == "__main__":
+    main()

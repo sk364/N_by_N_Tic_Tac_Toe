@@ -1,44 +1,55 @@
-def board_full(board,n):
-	for i in range(n):
-		for j in range(n):
-			if board[i][j] == -1:
-				return 0
+"""
+Common functions used by two or more scripts
+"""
 
-	return 1
+def board_full(board, glength):
+    """
+    Returns True if the board is full or False if not
+    """
+    for i in range(glength):
+        for j in range(glength):
+            if board[i][j] == -1:
+                return False
 
-def win(board, player, n):
-	for i in range(n):
-		fl = 0
-		for j in range(n):
-			if board[i][j]!=player:
-				fl=1
-				break
-		if fl==0:
-			return 1
+    return True
 
-	for i in range(n):
-                fl = 0
-                for j in range(n):
-                        if board[j][i]!=player:
-                                fl=1
-                                break
-                if fl==0:
-                        return 1
-	fl = 0
-	for i in range(n):
-		if board[i][i]!=player:
-			fl = 1
-			break
-	if fl==0:
-		return 1
 
-	fl = 0
-	for i in range(n):
-		if board[n-i-1][i]!=player:
-			fl = 1
-			break
+def win(board, player, glength):
+    """
+    Returns if there is a win situation for the player
+    """
+    for i in range(glength):
+        flag = False
+        for j in range(glength):
+            if board[i][j] != player:
+                flag = True
+                break
+        if not flag:
+            return True
 
-	if fl==0:
-		return 1
+    for i in range(glength):
+        flag = False
+        for j in range(glength):
+            if board[j][i] != player:
+                flag = True
+                break
+        if not flag:
+            return True
+    flag = False
+    for i in range(glength):
+        if board[i][i] != player:
+            flag = True
+            break
+    if not flag:
+        return True
 
-	return 0
+    flag = False
+    for i in range(glength):
+        if board[glength - i - 1][i] != player:
+            flag = True
+            break
+
+    if not flag:
+        return True
+
+    return 0
