@@ -7,7 +7,7 @@ import copy
 import inputbox
 import cpu
 import gui
-from gui import draw_board, display_message
+from gui import *
 from common import board_full, win
 
 pygame.init()
@@ -17,6 +17,8 @@ DEPTH = 3
 PLAYER = -1
 FIRST_PLAY = -1
 GLENGTH = 0
+USCORE = 0
+CPUSCORE = 0
 
 GAME_EXIT_MSGS = ["You Lose!", "You Win!", "DRAW!"]
 
@@ -121,6 +123,8 @@ def get_other_diagscore(board, player, glength, flag):
     Returns the other diagonal score of a player after the game is over
     """
 
+    scr = 0
+    scr1 = 0
     for k in xrange(glength):
         j = k
         prev = 0
@@ -183,8 +187,8 @@ def get_score(board, player, glength):
 
     score = get_rcscore(board, player, glength, flag)
     score += get_rcscore(board, player, glength, flag, check=1)
-    score += get_diagscore(board, player, glength, flag)
-    score += get_diagscore(board, player, glength, flag, check=1)
+    score += get_main_diagscore(board, player, glength, flag)
+    score += get_other_diagscore(board, player, glength, flag)
     score += leftovers(flag, glength)
 
     return score
@@ -209,14 +213,20 @@ def check_game_end(board, player, mode):
     """
     Returns 1 if the game ended or 2 if not
     """
+
+    global USCORE, CPUSCORE
     if board_full(board, GLENGTH):
         if player == 0:
             x_scr = get_score(board, player, GLENGTH)
             o_scr = get_score(board, OPP[player], GLENGTH)
+            USCORE += x_scr
+            CPUSCORE += o_scr
         else:
             o_scr = get_score(board, player, GLENGTH)
             x_scr = get_score(board, OPP[player], GLENGTH)
-        display_message("Score - O = " + str(o_scr) + " X = " + str(x_scr))
+            USCORE += o_scr
+            CPUSCORE += x_scr
+        display_message("Score - O = " + str(o_scr) + ", X = " + str(x_scr))
         return 1
 
     return 2
@@ -244,19 +254,19 @@ def run_game(mode):
 
     if mode == 1:
         while PLAYER not in [0, 1]:
-            ans = inputbox.ask(screen, "Press 1 for circle, 0 for cross")
+            ans = inputbox.ask(SCREEN, "Press 1 for circle, 0 for cross")
             if len(ans) == 1 and ans in ['1', '0']:
                 PLAYER = int(ans)
 
         while FIRST_PLAY not in [0, 1]:
             ans = inputbox.ask(
-                screen, "Press 0 for cross to play first, 1 for circle")
+                SCREEN, "Press 0 for cross to play first, 1 for circle")
             if len(ans) == 1 and ans in ['1', '0']:
                 FIRST_PLAY = int(ans)
 
     if mode != 3:
         while GLENGTH <= 0 or GLENGTH > 8:
-            ans = inputbox.ask(screen, "Enter N")
+            ans = inputbox.ask(SCREEN, "Enter N")
             if len(ans) == 1 and ans in [str(i) for i in xrange(1, 8)]:
                 GLENGTH = int(ans)
 
@@ -267,7 +277,12 @@ def run_game(mode):
         cpu_turn(board, OPP[PLAYER], mode)
 
     game_loop = True
+    rounds = 0
+    first_turn = True
     while game_loop:
+        if rounds % 2 and first_turn == True and FIRST_PLAY == OPP[PLAYER]:
+            cpu_turn(board, OPP[PLAYER], mode)
+            first_turn = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -283,8 +298,37 @@ def run_game(mode):
 
                     end = check_game_end(board, PLAYER, mode)
 
+                    if end == 1:
+                        rounds += 1
+                        if rounds != 5:
+                            board = init_board()
+                            FIRST_PLAY = OPP[PLAYER]
+                            draw_board(board, SIZE, GLENGTH)
+                            first_turn = True
+                        else:
+                            SCREEN.fill((0, 0, 0))
+                            display_message("All rounds over!")
+                            display_message("Score: You - "+str(USCORE)+", CPU - "+str(CPUSCORE), off_height=60)
+                            pygame.time.wait(2000)
+                        end = -1
+
                     if end == 2:
                         end = cpu_turn(board, OPP[PLAYER], mode)
+
+                    if end == 1:
+                        rounds += 1
+                        if rounds < 5:
+                            board = init_board()
+                            FIRST_PLAY = OPP[PLAYER]
+                            draw_board(board, SIZE, GLENGTH)
+                            first_turn = False
+                        else:
+                            SCREEN.fill((0, 0, 0))
+                            display_message("All rounds over!")
+                            display_message("Score: You - "+str(USCORE)+", CPU - "+str(CPUSCORE), off_height=60)
+                            pygame.time.wait(5000)
+                        end = -1
+
 
         if mode == 2:
             end = cpu_turn(board, PLAYER, mode)
@@ -300,11 +344,11 @@ def main():
     """
 
     black = (0, 0, 0)
-    screen.fill(black)
+    SCREEN.fill(black)
     choice = -1
     while choice not in [1, 2]:
         ans = inputbox.ask(
-            screen, "Press 1 for CPU v/s You and 2 for CPU v/s CPU")
+            SCREEN, "Press 1 for CPU v/s You and 2 for CPU v/s CPU")
         if len(ans) == 1 and ans[0] in ['1', '2']:
             choice = int(ans[0])
 

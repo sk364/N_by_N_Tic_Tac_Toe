@@ -31,7 +31,7 @@ def draw_board(board, size, grid_length):
                 x_coord = (SIZE / (2 * grid_length)) * ((2 * j) + 1)
                 y_coord = (SIZE / (2 * grid_length)) * ((2 * i) + 1)
                 radius = SIZE / (2 * grid_length) - 4
-                pygame.draw.circle(SCREEN, black, (xcoord, y_coord), radius, 4)
+                pygame.draw.circle(SCREEN, black, (x_coord, y_coord), radius, 4)
 
             elif board[i][j] == 0:
                 # drawing a cross
@@ -46,7 +46,7 @@ def draw_board(board, size, grid_length):
     pygame.display.update()
 
 
-def display_message(msg):
+def display_message(msg, off_width=0, off_height=0):
     """Displays any message provided in argument"""
     blue = (0, 0, 200)
 
@@ -54,8 +54,8 @@ def display_message(msg):
 
     label = font.render(msg, True, blue)
 
-    x_width = (screen.get_rect().width - label.get_rect().width) / 2
-    y_width = (screen.get_rect().height - label.get_rect().height) / 2
+    x_width = (SCREEN.get_rect().width - label.get_rect().width) / 2 + off_width
+    y_width = (SCREEN.get_rect().height - label.get_rect().height) / 2 + off_height
 
     SCREEN.blit(label, (x_width, y_width))
 

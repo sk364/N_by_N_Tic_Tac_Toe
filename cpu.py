@@ -50,17 +50,17 @@ def eval_diags(board, player, glength):
     for i in range(1, glength):
         if board[i][i] == player and score > 0:
             score = score * 10
-        elif board[i][j] == player and score < 0:
+        elif board[i][i] == player and score < 0:
             score = 0
             break
-        elif board[i][j] == player:
+        elif board[i][i] == player:
             score = 1
-        elif board[i][j] == OPP[player] and score < 0:
+        elif board[i][i] == OPP[player] and score < 0:
             score = score * 10
-        elif board[i][j] == OPP[player] and score > 0:
+        elif board[i][i] == OPP[player] and score > 0:
             score = 0
             break
-        elif board[i][j] == OPP[player]:
+        elif board[i][i] == OPP[player]:
             score = 1
 
     score_sum = score
@@ -73,17 +73,17 @@ def eval_diags(board, player, glength):
     for i in range(1, glength):
         if board[glength - i - 1][i] == player and score > 0:
             score = score * 10
-        elif board[i][j] == player and score < 0:
+        elif board[glength - i - 1][i] == player and score < 0:
             score = 0
             break
-        elif board[i][j] == player:
+        elif board[glength - i - 1][i] == player:
             score = 1
-        elif board[i][j] == OPP[player] and score < 0:
+        elif board[glength - i - 1][i] == OPP[player] and score < 0:
             score = score * 10
-        elif board[i][j] == OPP[player] and score > 0:
+        elif board[glength - i - 1][i] == OPP[player] and score > 0:
             score = 0
             break
-        elif board[i][j] == OPP[player]:
+        elif board[glength - i - 1][i] == OPP[player]:
             score = 1
 
     score_sum = score_sum + score
