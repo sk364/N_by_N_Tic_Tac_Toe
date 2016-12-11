@@ -308,7 +308,8 @@ def run_game(mode):
                         else:
                             SCREEN.fill((0, 0, 0))
                             display_message("All rounds over!")
-                            display_message("Score: You - "+str(USCORE)+", CPU - "+str(CPUSCORE), off_height=60)
+                            score_msg = "Score: You - "+str(USCORE)+", CPU - "+str(CPUSCORE)
+                            display_message(score_msg, off_height=60)
                             pygame.time.wait(2000)
                         end = -1
 
@@ -325,7 +326,8 @@ def run_game(mode):
                         else:
                             SCREEN.fill((0, 0, 0))
                             display_message("All rounds over!")
-                            display_message("Score: You - "+str(USCORE)+", CPU - "+str(CPUSCORE), off_height=60)
+                            score_msg = "Score: You - "+str(USCORE)+", CPU - "+str(CPUSCORE)
+                            display_message(score_msg, off_height=60)
                             pygame.time.wait(5000)
                         end = -1
 

@@ -6,6 +6,7 @@ printing any message over the screen
 """
 
 import pygame
+from pygame.locals import *
 
 SIZE = 450
 SCREEN = pygame.display.set_mode((SIZE, SIZE), 0, 32)
